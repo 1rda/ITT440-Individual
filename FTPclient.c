@@ -6,12 +6,13 @@
 #include <string.h>
 #define SIZE 1024
 
+//Send the .txt file
 void send_file(FILE *fp, int socket_desc){
 	char data[SIZE] = {0};
 
 	while(fgets(data, SIZE, fp) != NULL){
 		if(send(socket_desc, data, sizeof(data), 0) < 0){
-			perror("Error in sending data");
+			perror("[!]Error in sending data");
 			exit(1);
 		}
 		bzero(data, SIZE);
@@ -23,37 +24,38 @@ int main(int argc, char *argv[]){
 	struct sockaddr_in server;
 	char *message;
 	FILE *fp;
-	char *filename = "adri.txt";
+	char *filename = "adri.txt"; //file to be sent
 
 	//Create Socket
 	socket_desc = socket(AF_INET, SOCK_STREAM, 0);
 	if(socket_desc == -1){
-		printf("Could not create socket");
+		printf("[!]Could not create socket");
 		return 1;
 	}
 
-	server.sin_addr.s_addr = inet_addr("192.168.56.101");
+	server.sin_addr.s_addr = inet_addr("192.168.56.101"); //server address
 	server.sin_family = AF_INET;
 	server.sin_port = htons(8888);
 
 	//Connect to FTP server
 	if(connect(socket_desc, (struct sockaddr *)&server, sizeof(server)) < 0){
-		puts("Connection Failed");
+		puts("[!]Connection failed");
 		return 1;
 	}
-	puts("Connected");
+	puts("[+]Connected");
 
+	//Open file
 	fp = fopen(filename, "r");
 	if(fp == NULL){
-		perror("Error in reading file.");
+		perror("[!]Error in reading file.");
 		return 1;
 	}
 
 	send_file(fp, socket_desc);
-	printf("File sent successfully.\n");
+	printf("[+]File sent successfully\n");
 
 	close(socket_desc);
-	printf("Disconnected from the server.\n");
+	printf("[+]Connection closed\n");
 
 	return 0;
 }
